@@ -1,10 +1,16 @@
 import os
 import requests
+import streamlit as st  # Added import
 from dotenv import load_dotenv
 
 load_dotenv()
 
-HF_TOKEN = os.getenv("HF_TOKEN")
+# Check Streamlit Cloud secrets panel first, fall back to local .env
+if "HF_TOKEN" in st.secrets:
+    HF_TOKEN = st.secrets["HF_TOKEN"]
+else:
+    HF_TOKEN = os.getenv("HF_TOKEN")
+
 API_URL = "https://router.huggingface.co/v1/chat/completions"
 
 headers = {
@@ -14,7 +20,6 @@ headers = {
 
 def ask_health_question(question):
     payload = {
-        # Changed to a highly reliable, ungated open model
         "model": "Qwen/Qwen2.5-7B-Instruct", 
         "messages": [
             {
@@ -30,7 +35,6 @@ def ask_health_question(question):
 
     response = requests.post(API_URL, headers=headers, json=payload)
     
-    # Debug print to see exact error message text if it fails again
     if response.status_code != 200:
         print(f"Error Code: {response.status_code}")
         print(f"Server Response: {response.text}")
